@@ -29,48 +29,55 @@ app.get('/', (req, res) => {
     res.render('index.ejs', {messages: result})
   })
 })
-
+/* ----ChatGPT HELP-------- */
 app.post('/messages', (req, res) => {
-  db.collection('messages').insertOne({name: req.body.name, msg: req.body.msg, thumbUp: 0, thumbDown:0}, (err, result) => {
+  db.collection('messages').insertOne({
+    name: req.body.name,
+    msg: req.body.msg,
+    thumbUp: 0,
+    thumbDown: 0,
+    tier: 'D' // Default tier
+  }, (err, result) => {
     if (err) return console.log(err)
-    console.log('saved to database')
+    console.log('Saved to database')
     res.redirect('/')
   })
 })
 
-app.put('/messages', (req, res) => {
-  db.collection('messages')
-  .findOneAndUpdate({name: req.body.name, msg: req.body.msg}, {
-    $set: {
-      thumbUp:req.body.thumbUp + 1
+/* ----ChatGPT HELP-------- */
+app.put('/update-tier', (req, res) => {
+  const { name, newTier } = req.body;
+
+  db.collection('messages').findOneAndUpdate(
+    { name: name },
+    { $set: { tier: newTier } },
+    { returnDocument: 'after' },
+    (err, result) => {
+      if (err) return res.send(err);
+      res.send(result);
     }
-  }, {
-    sort: {_id: -1},
-    upsert: true
-  }, (err, result) => {
-    if (err) return res.send(err)
-    res.send(result)
-  })
-})
+  );
+});
 
-app.put('/messagesDown', (req, res) => {
-      db.collection('messages')
-      .findOneAndUpdate({name: req.body.name, msg: req.body.msg}, {
-        $set: {
-          thumbUp:req.body.thumbUp - 1
-        }
-      }, {
-        sort: {_id: -1},
-        upsert: true
-      }, (err, result) => {
-        if (err) return res.send(err)
-        res.send(result)
-      })
-    })
 
-app.delete('/messages', (req, res) => {
-  db.collection('messages').findOneAndDelete({name: req.body.name, msg: req.body.msg}, (err, result) => {
-    if (err) return res.send(500, err)
-    res.send('Message deleted!')
-  })
-})
+// app.put('/messagesDown', (req, res) => {
+//       db.collection('messages')
+//       .findOneAndUpdate({name: req.body.name, msg: req.body.msg}, {
+//         $set: {
+//           thumbUp:req.body.thumbUp - 1
+//         }
+//       }, {
+//         sort: {_id: -1},
+//         upsert: true
+//       }, (err, result) => {
+//         if (err) return res.send(err)
+//         res.send(result)
+//       })
+//     })
+
+// app.delete('/messages', (req, res) => {
+//   db.collection('messages').findOneAndDelete({name: req.body.name, msg: req.body.msg}, (err, result) => {
+//     if (err) return res.send(500, err)
+//     res.send('Message deleted!')
+//   })
+// })
